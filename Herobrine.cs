@@ -23,6 +23,8 @@ namespace MCGalaxy
 		public bool HerobrineSpawned = false;
 		public static SchedulerTask Task;
 		
+		public bool AllowGrief {get; set;} = true;
+		
 		public int CurrentHerobrineTask = 0; /*
 			0 = Nothing
 			1 = Stalk
@@ -49,7 +51,7 @@ namespace MCGalaxy
 		}
 		PlayerBot heroEntity;
 		int stalkTimeLeft = 0;
-		int stalkTime = 30;
+		int stalkTime = 120;
 		int stalkDisappearDistance = 1200;
 		public void DestroyHerobrine()
 		{
@@ -298,7 +300,7 @@ namespace MCGalaxy
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(3));
 			}
-			if (choice == 4) // cross in ground
+			if (choice == 4 && AllowGrief) // cross in ground
 			{
 				CurrentHerobrineTask = 2;
 				Level level = players[rnd.Next(0, players.Length)].level;
