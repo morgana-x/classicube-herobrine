@@ -21,3 +21,5 @@ Summoning can only happen once per server session / until plugin reloaded
 + Place fire on top of the magma block
 ![_step1](https://github.com/morgana-x/classicube-herobrine/assets/89588301/2431fc09-9597-4000-be52-04bb7c0868f8)
 ![_step2](https://github.com/morgana-x/classicube-herobrine/assets/89588301/776997f9-a5cc-4788-8ba6-2e2fe215bfa3)
+# Screenshot
+![mystery](https://github.com/morgana-x/classicube-herobrine/assets/89588301/32c66f06-80fe-4fa2-a917-2317704359f8)
