@@ -11,6 +11,7 @@ using MCGalaxy.Tasks;
 using MCGalaxy.Commands;
 using System;
 using MCGalaxy.Maths;
+using BlockRaw = System.Byte;
 namespace MCGalaxy
 {
     public class Herobrine : Plugin
@@ -47,12 +48,14 @@ namespace MCGalaxy
 			OnBlockChangingEvent.Unregister(HandleBlockChanged);
 			OnPlayerConnectEvent.Unregister(HandlePlayerConnect);
 			Server.MainScheduler.Cancel(Task);
+			SetFog(0);
 			DestroyHerobrine();
 		}
 		PlayerBot heroEntity;
 		int stalkTimeLeft = 0;
-		int stalkTime = 120;
-		int stalkDisappearDistance = 1200;
+		int stalkTime = 125;
+		int stalkDisappearDistance = 600;
+		ushort SpookyFog = 65;
 		public void DestroyHerobrine()
 		{
 			if (heroEntity == null)
@@ -207,8 +210,8 @@ namespace MCGalaxy
 			Random rnd = new Random();
 			Player selectedPlayer = players[rnd.Next(0, players.Length)];
 			DestroyHerobrine();
-			int rndX = rnd.Next(900, 1500);
-			int rndZ = rnd.Next(900, 1500);
+			int rndX = rnd.Next(650, 1500);
+			int rndZ = rnd.Next(650, 1500);
 			if (rnd.Next(0,10) >= 5)
 			{
 				rndX = rndX * -1;
@@ -274,23 +277,23 @@ namespace MCGalaxy
 				//CurrentHerobrineTask = 2;
 				SetSky(150,150,170);
 				SetCloud(100,100,100);
-				SetFog(100,100,100);
+				SetFog((ushort)(SpookyFog/1.5));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
 				SetSky(112, 160, 237);
 				SetCloud(255,255,255);
-				SetFog(255,255,255);
+				SetFog((ushort)(SpookyFog/2));
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(1));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
 				SetSky(150,150,170);
 				SetCloud(100,100,100);
-				SetFog(100,100,100);
+				SetFog((ushort)(SpookyFog/1.5));
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(2));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
 				SetSky(112, 160, 237);
 				SetCloud(255,255,255);
-				SetFog(255,255,255);
+				SetFog(SpookyFog);
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(3));
 			}
@@ -315,18 +318,43 @@ namespace MCGalaxy
 				}, null, TimeSpan.FromSeconds(20));
 				return;
 			}
+			if (choice == 4) // creepy sound
+			{
+				//RandomSound();
+			}
 			
+		}
+		void RandomSound()
+		{
+			Player[] players = PlayerInfo.Online.Items;
+			Random rnd = new Random();
+			Player pl = players[rnd.Next(0, players.Length)];
+			pl.Message("TEST");
+			Level level = pl.level;
+			ushort x = (ushort)((pl.Pos.X /32));
+			ushort y = (ushort)((pl.Pos.Y /32));
+			ushort z = (ushort)((pl.Pos.Z /32));
+			var b = level.FastGetBlock(x, (ushort)(y-2), z);
+			//level.UpdateBlock(pl, x, (ushort)(y-2), z, 20);
+			level.SetTile(x, (ushort)(y-2), z, (BlockRaw)20);
+			Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
+				//level.UpdateBlock(pl, x, (ushort)(y-2), z, 0);
+				level.SetTile(x, (ushort)(y-2), z, (BlockRaw)0);
+			}, null, TimeSpan.FromMilliseconds(100));
+			
+			Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
+				level.SetTile(x, (ushort)(y-2), z, (BlockRaw)b);
+				//level.UpdateBlock(pl, x, (ushort)(y-2),z, b);
+			}, null, TimeSpan.FromMilliseconds(150));
 		}
 		ColorDesc sky = new ColorDesc((byte)112, (byte)160, (byte)237);
 	
 		ColorDesc cloud = new ColorDesc((byte)255,(byte)255,(byte)255);
 
 		ColorDesc fog = new ColorDesc((byte)255,(byte)255,(byte)255);
-		void SetFog(byte r, byte g, byte b)
+		void SetFog(ushort dist)
 		{
-			fog.R = r;
-			fog.G = g;
-			fog.B = b;
+			fogDistance = dist;
 			UpdateEnvAll();
 		}
 		void SetSky(byte r, byte g, byte b)
@@ -343,11 +371,14 @@ namespace MCGalaxy
 			cloud.B = b;
 			UpdateEnvAll();
 		}
+		ushort fogDistance = 0;
 		void UpdateEnv(Player pl)
 		{
-			  pl.Send(Packet.EnvColor(0, sky.R, sky.G, sky.B));
-              pl.Send(Packet.EnvColor(1, cloud.R, cloud.G, cloud.B));
-              pl.Send(Packet.EnvColor(2, fog.R, fog.G, fog.B));
+			pl.Send(Packet.EnvColor(0, sky.R, sky.G, sky.B));
+			pl.Send(Packet.EnvColor(1, cloud.R, cloud.G, cloud.B));
+			//pl.Send(Packet.EnvColor(2, fog.R, fog.G, fog.B));
+			// 96
+			pl.Send(Packet.EnvMapProperty( MCGalaxy.EnvProp.MaxFog, fogDistance));
 		}
 		void UpdateEnvAll()
 		{
@@ -356,6 +387,7 @@ namespace MCGalaxy
             {
 				UpdateEnv(pl);
 			}
+	
 		}
 		void HandlePlayerConnect(Player p)
         {
@@ -376,6 +408,7 @@ namespace MCGalaxy
 			{
 				return;
 			}
+			//RandomSound();
 			if (block != 54)
 			{
 				return;
@@ -433,23 +466,24 @@ namespace MCGalaxy
 			LookAtPlayer(p);
 			SetSky(150,150,170);
 			SetCloud(100,100,100);
-			SetFog(100,100,100);
+			SetFog(16);
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
 				SetSky(112, 160, 237);
 				SetCloud(255,255,255);
-				SetFog(255,255,255);
+				SetFog(32);
 				}, null, TimeSpan.FromSeconds(1));
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
 				SetSky(150,150,170);
 				SetCloud(100,100,100);
-				SetFog(100,100,100);
+				SetFog(64);
 				}, null, TimeSpan.FromSeconds(2));
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
 				DestroyHerobrine();
 				SetSky(112, 160, 237);
 				SetCloud(255,255,255);
-				SetFog(255,255,255);
+				SetFog(SpookyFog);
 				}, null, TimeSpan.FromSeconds(3));
+			
             //
             //bot.Owner = p.truename;
 		}
