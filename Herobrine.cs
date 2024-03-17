@@ -23,7 +23,7 @@ namespace MCGalaxy
 		public bool HerobrineSpawned = false;
 		public static SchedulerTask Task;
 		
-		public bool AllowGrief {get; set;} = true;
+		public bool AllowGrief = true;
 		
 		public int CurrentHerobrineTask = 0; /*
 			0 = Nothing
@@ -259,19 +259,13 @@ namespace MCGalaxy
 			
 			if (choice == 1) // Stalk
 			{
+				stalkTimeLeft = stalkTime;
 				InitStalk();
 				CurrentHerobrineTask = 1;
 				return;
 			}
 			Player[] players = PlayerInfo.Online.Items;
-			if (choice == 2) // Message
-			{
-				//Player selectedPlayer = players[rnd.Next(0, players.Length)];
-				//selectedPlayer.Message("Spooky message");
-				return;
-			}
-			
-			if (choice == 3) // storm / clouds
+			if (choice == 2) // storm / clouds
 			{
 				if (sky.R == 150 && sky.G == 150 && sky.B == 170)
 				{
@@ -300,7 +294,7 @@ namespace MCGalaxy
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(3));
 			}
-			if (choice == 4 && AllowGrief) // cross in ground
+			if (choice == 3 && AllowGrief) // cross in ground
 			{
 				CurrentHerobrineTask = 2;
 				Level level = players[rnd.Next(0, players.Length)].level;
