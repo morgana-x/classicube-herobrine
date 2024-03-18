@@ -26,6 +26,8 @@ namespace MCGalaxy
 		
 		public bool AllowGrief = true;
 		
+		bool placedCross = false;
+		
 		public int CurrentHerobrineTask = 0; /*
 			0 = Nothing
 			1 = Stalk
@@ -35,6 +37,8 @@ namespace MCGalaxy
 		{   
 			Player[] players = PlayerInfo.Online.Items;
 			HerobrineSpawned = false;
+			placedCross = false;
+			CurrentHerobrineTask = 0;
 			OnBlockChangingEvent.Register(HandleBlockChanged, Priority.Low);
 			OnPlayerConnectEvent.Register(HandlePlayerConnect, Priority.Low);
 			Server.MainScheduler.QueueRepeat(DoHerobrineTick, null, TimeSpan.FromSeconds(1));
@@ -48,6 +52,8 @@ namespace MCGalaxy
 			OnBlockChangingEvent.Unregister(HandleBlockChanged);
 			OnPlayerConnectEvent.Unregister(HandlePlayerConnect);
 			Server.MainScheduler.Cancel(Task);
+			placedCross = false;
+			CurrentHerobrineTask = 0;
 			SetFog(0);
 			DestroyHerobrine();
 		}
@@ -150,7 +156,11 @@ namespace MCGalaxy
 				return;
 			}
 			Player[] playerlist = PlayerInfo.Online.Items;
-		
+			if (playerlist.Length < 1)
+			{
+				CurrentHerobrineTask = 0;
+				return;
+			}
 			if (CurrentHerobrineTask == 1)
 			{
 				DoStalk();
@@ -207,8 +217,17 @@ namespace MCGalaxy
 		void InitStalk()
 		{
 			Player[] players = PlayerInfo.Online.Items;
+			if (players.Length < 1)
+			{
+				CurrentHerobrineTask = 0;
+				return;
+			}
 			Random rnd = new Random();
 			Player selectedPlayer = players[rnd.Next(0, players.Length)];
+			if (selectedPlayer == null)
+			{
+				return;
+			}
 			DestroyHerobrine();
 			int rndX = rnd.Next(650, 1500);
 			int rndZ = rnd.Next(650, 1500);
@@ -252,10 +271,18 @@ namespace MCGalaxy
 			{
 				return;
 			}
+			Player[] players = PlayerInfo.Online.Items;
+			if (players.Length < 1)
+			{
+				CurrentHerobrineTask = 0;
+				return;
+			}
 			if (CurrentHerobrineTask != 0)
 			{
 				return;
 			}
+			
+
 			Random rnd = new Random();
 				
 			int choice = rnd.Next(0, 5);
@@ -267,7 +294,7 @@ namespace MCGalaxy
 				CurrentHerobrineTask = 1;
 				return;
 			}
-			Player[] players = PlayerInfo.Online.Items;
+		
 			if (choice == 2) // storm / clouds
 			{
 				if (sky.R == 150 && sky.G == 150 && sky.B == 170)
@@ -297,8 +324,9 @@ namespace MCGalaxy
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(3));
 			}
-			if (choice == 3 && AllowGrief) // cross in ground
+			if (choice == 3 && AllowGrief && !placedCross) // cross in ground
 			{
+				placedCross = true;
 				CurrentHerobrineTask = 2;
 				Level level = players[rnd.Next(0, players.Length)].level;
 				int x = rnd.Next(0, level.Width);
@@ -327,6 +355,10 @@ namespace MCGalaxy
 		void RandomSound()
 		{
 			Player[] players = PlayerInfo.Online.Items;
+			if (players.Length < 1)
+			{
+				return;
+			}
 			Random rnd = new Random();
 			Player pl = players[rnd.Next(0, players.Length)];
 			pl.Message("TEST");
