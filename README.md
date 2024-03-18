@@ -6,7 +6,7 @@ Emulates that old creepy pasta, subtle, almost unnoticable yet, unnerving experi
 this plugin SLOWLY will GRIEF your server, (creepy crosses in the ground, probably should just make it do it once only) (You can disable this by looking through the code and setting `AllowGrief` to false
 
 # Setup
-+ Paste Herobrine.cs in your classicube server's plugin folder
++ Paste Herobrine.cs in your classicube (mcgalaxy) server's plugin folder
 + Type these commands
 ```
 /punload herobrine (if updating) (You will need to resummon herobrine on reloading)
