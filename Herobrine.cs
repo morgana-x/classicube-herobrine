@@ -26,6 +26,8 @@ namespace MCGalaxy
 		
 		public bool AllowGrief = true;
 		
+		public Level HerobrineLevel;
+		
 		bool placedCross = false;
 		
 		public int CurrentHerobrineTask = 0; /*
@@ -79,18 +81,11 @@ namespace MCGalaxy
 		public Player[] GetPlayersInLevel()
 		{
 			Player[] players = PlayerInfo.Online.Items;
-			
-			if (heroEntity == null)
-			{
-				return players;
-			}
-			//return players.ToList().Where(x => x.level = heroEntity.level).ToArray();
-			//
 			int numOfPlayers = 0;
 			for (int i=0; i < players.Length; i++)
 			{
 				var p = players[i];
-				if (p.level == heroEntity.level)
+				if (p.level == HerobrineLevel)
 				{
 					numOfPlayers++;
                     //foundPlayers[i] = p;
@@ -100,7 +95,7 @@ namespace MCGalaxy
             for (int i = 0; i < players.Length; i++)
             {
                 var p = players[i];
-                if (p.level == heroEntity.level)
+                if (p.level == HerobrineLevel)
                 {
                     //numOfPlayers++;
                     foundPlayers[numOfPlayers-1] = p;
@@ -416,6 +411,8 @@ namespace MCGalaxy
 		ColorDesc fog = new ColorDesc((byte)255,(byte)255,(byte)255);
 		void SetFog(ushort dist)
 		{
+			
+			HerobrineLevel.Config.ExpFog = dist;
 			fogDistance = dist;
 			UpdateEnvAll();
 		}
@@ -440,7 +437,14 @@ namespace MCGalaxy
 			//pl.Send(Packet.EnvColor(1, cloud.R, cloud.G, cloud.B));
 			//pl.Send(Packet.EnvColor(2, fog.R, fog.G, fog.B));
 			// 96
-			pl.Send(Packet.EnvMapProperty( MCGalaxy.EnvProp.MaxFog, fogDistance));
+			if (pl.Level == HerobrineLevel)
+			{
+				pl.Send(Packet.EnvMapProperty( MCGalaxy.EnvProp.MaxFog, fogDistance));
+			}
+			else 
+			{
+				
+			}
 		}
 		void UpdateEnvAll()
 		{
@@ -525,6 +529,7 @@ namespace MCGalaxy
             }*/
 			HerobrineSpawned = true;
 			SpawnHerobrine(p.level, x,y,z);
+			HerobrineLevel = p.level;
 			LookAtPlayer(p);
 			//SetSky(150,150,170);
 			//SetCloud(100,100,100);
