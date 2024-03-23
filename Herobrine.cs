@@ -35,7 +35,7 @@ namespace MCGalaxy
 		*/
 		public override void Load(bool auto)
 		{   
-			Player[] players = PlayerInfo.Online.Items;
+			//Player[] players = GetPlayersInLevel();
 			HerobrineSpawned = false;
 			placedCross = false;
 			CurrentHerobrineTask = 0;
@@ -75,7 +75,40 @@ namespace MCGalaxy
 			}*/
 			PlayerBot.Remove(heroEntity);
 			heroEntity = null;
-		}			
+		}
+		public Player[] GetPlayersInLevel()
+		{
+			Player[] players = PlayerInfo.Online.Items;
+			
+			if (heroEntity == null)
+			{
+				return players;
+			}
+			//return players.ToList().Where(x => x.level = heroEntity.level).ToArray();
+			//
+			int numOfPlayers = 0;
+			for (int i=0; i < players.Length; i++)
+			{
+				var p = players[i];
+				if (p.level == heroEntity.level)
+				{
+					numOfPlayers++;
+                    //foundPlayers[i] = p;
+				}
+			}
+            Player[] foundPlayers = new Player[numOfPlayers];
+            for (int i = 0; i < players.Length; i++)
+            {
+                var p = players[i];
+                if (p.level == heroEntity.level)
+                {
+                    //numOfPlayers++;
+                    foundPlayers[numOfPlayers-1] = p;
+					numOfPlayers--;
+                }
+            }
+            return foundPlayers;
+		}
 		public void SpawnHerobrine(Level level, ushort x, ushort y, ushort z)
 		{
 			if (heroEntity != null)
@@ -123,7 +156,7 @@ namespace MCGalaxy
 				return;
 			}
 			stalkTimeLeft--;
-			Player[] players = PlayerInfo.Online.Items;
+			Player[] players = GetPlayersInLevel();
 			int shortestDist = 2000000;
 			Player selPlayer = null;
 			foreach (Player p in players)
@@ -159,6 +192,7 @@ namespace MCGalaxy
 			if (playerlist.Length < 1)
 			{
 				CurrentHerobrineTask = 0;
+				DestroyHerobrine();
 				return;
 			}
 			if (CurrentHerobrineTask == 1)
@@ -216,7 +250,7 @@ namespace MCGalaxy
 		}
 		void InitStalk()
 		{
-			Player[] players = PlayerInfo.Online.Items;
+			Player[] players = GetPlayersInLevel();
 			if (players.Length < 1)
 			{
 				CurrentHerobrineTask = 0;
@@ -271,7 +305,7 @@ namespace MCGalaxy
 			{
 				return;
 			}
-			Player[] players = PlayerInfo.Online.Items;
+			Player[] players = GetPlayersInLevel();
 			if (players.Length < 1)
 			{
 				CurrentHerobrineTask = 0;
@@ -297,29 +331,25 @@ namespace MCGalaxy
 		
 			if (choice == 2) // storm / clouds
 			{
-				if (sky.R == 150 && sky.G == 150 && sky.B == 170)
-				{
-					return;
-				}
 				//CurrentHerobrineTask = 2;
-				SetSky(150,150,170);
-				SetCloud(100,100,100);
+				//SetSky(150,150,170);
+				//SetCloud(100,100,100);
 				SetFog((ushort)(SpookyFog/1.5));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
-				SetSky(112, 160, 237);
-				SetCloud(255,255,255);
+				//SetSky(112, 160, 237);
+				//SetCloud(255,255,255);
 				SetFog((ushort)(SpookyFog/2));
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(1));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
-				SetSky(150,150,170);
-				SetCloud(100,100,100);
+				//SetSky(150,150,170);
+				//SetCloud(100,100,100);
 				SetFog((ushort)(SpookyFog/1.5));
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(2));
 				Server.MainScheduler.QueueOnce( (SchedulerTask task2) => {
-				SetSky(112, 160, 237);
-				SetCloud(255,255,255);
+				//SetSky(112, 160, 237);
+				//SetCloud(255,255,255);
 				SetFog(SpookyFog);
 				//CurrentHerobrineTask = 0;
 				}, null, TimeSpan.FromSeconds(3));
@@ -354,7 +384,7 @@ namespace MCGalaxy
 		}
 		void RandomSound()
 		{
-			Player[] players = PlayerInfo.Online.Items;
+			Player[] players = GetPlayersInLevel();
 			if (players.Length < 1)
 			{
 				return;
@@ -379,9 +409,9 @@ namespace MCGalaxy
 				//level.UpdateBlock(pl, x, (ushort)(y-2),z, b);
 			}, null, TimeSpan.FromMilliseconds(150));
 		}
-		ColorDesc sky = new ColorDesc((byte)112, (byte)160, (byte)237);
+		//ColorDesc sky = new ColorDesc((byte)112, (byte)160, (byte)237);
 	
-		ColorDesc cloud = new ColorDesc((byte)255,(byte)255,(byte)255);
+		//ColorDesc cloud = new ColorDesc((byte)255,(byte)255,(byte)255);
 
 		ColorDesc fog = new ColorDesc((byte)255,(byte)255,(byte)255);
 		void SetFog(ushort dist)
@@ -389,32 +419,32 @@ namespace MCGalaxy
 			fogDistance = dist;
 			UpdateEnvAll();
 		}
-		void SetSky(byte r, byte g, byte b)
+		/*void SetSky(byte r, byte g, byte b)
 		{
 			sky.R = r;
 			sky.G = g;
 			sky.B = b;
 			UpdateEnvAll();
-		}
-		void SetCloud(byte r, byte g, byte b)
+		}*/
+		/*void SetCloud(byte r, byte g, byte b)
 		{
 			cloud.R = r;
 			cloud.G = g;
 			cloud.B = b;
 			UpdateEnvAll();
-		}
+		}*/
 		ushort fogDistance = 0;
 		void UpdateEnv(Player pl)
 		{
-			pl.Send(Packet.EnvColor(0, sky.R, sky.G, sky.B));
-			pl.Send(Packet.EnvColor(1, cloud.R, cloud.G, cloud.B));
+			//pl.Send(Packet.EnvColor(0, sky.R, sky.G, sky.B));
+			//pl.Send(Packet.EnvColor(1, cloud.R, cloud.G, cloud.B));
 			//pl.Send(Packet.EnvColor(2, fog.R, fog.G, fog.B));
 			// 96
 			pl.Send(Packet.EnvMapProperty( MCGalaxy.EnvProp.MaxFog, fogDistance));
 		}
 		void UpdateEnvAll()
 		{
-			Player[] players = PlayerInfo.Online.Items;
+			Player[] players = GetPlayersInLevel();
 			foreach (Player pl in players)
             {
 				UpdateEnv(pl);
@@ -496,23 +526,23 @@ namespace MCGalaxy
 			HerobrineSpawned = true;
 			SpawnHerobrine(p.level, x,y,z);
 			LookAtPlayer(p);
-			SetSky(150,150,170);
-			SetCloud(100,100,100);
+			//SetSky(150,150,170);
+			//SetCloud(100,100,100);
 			SetFog(16);
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
-				SetSky(112, 160, 237);
-				SetCloud(255,255,255);
+				//SetSky(112, 160, 237);
+				//SetCloud(255,255,255);
 				SetFog(32);
 				}, null, TimeSpan.FromSeconds(1));
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
-				SetSky(150,150,170);
-				SetCloud(100,100,100);
+				//SetSky(150,150,170);
+				//SetCloud(100,100,100);
 				SetFog(64);
 				}, null, TimeSpan.FromSeconds(2));
 			Server.MainScheduler.QueueOnce( (SchedulerTask task) => {
 				DestroyHerobrine();
-				SetSky(112, 160, 237);
-				SetCloud(255,255,255);
+				//SetSky(112, 160, 237);
+				//SetCloud(255,255,255);
 				SetFog(SpookyFog);
 				}, null, TimeSpan.FromSeconds(3));
 			
